@@ -6,6 +6,7 @@ import inference.ConfigInference.ID_EVALUATION_METRIC;
 
 public class InvGaussianError implements EvaluationMetric {
 	private final int sizeTable;
+	
 	public InvGaussianError(int sizeTable) {
 		this.sizeTable=sizeTable;
 	}

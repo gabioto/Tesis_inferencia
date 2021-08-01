@@ -78,7 +78,7 @@ public abstract class AbstractNetworkInfered extends AbstractNetwork {
 			int idGene=geneInfered.getIdGene();
 			Pair<Boolean, Boolean> ged = aplicatedFunction(geneInfered, previunState);
 			state[idGene] = ged.getKey();
-			probabilisticValues[idGene] = ged.getValue();
+			probabilisticValues[idGene] = ged.getValue(); 
 		}
 		return new Pair<>(state, probabilisticValues);
 	}

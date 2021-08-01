@@ -24,8 +24,8 @@ public class GeneticNetwork extends AbstractNetwork {
 	}
 	
 	public enum Topology_Network {
-		SCALE_FREE, //barabasi
-		RANDOM,  //erdos
+		SCALE_FREE,
+		RANDOM,
 		FIXED
 	}
 
@@ -896,6 +896,7 @@ public class GeneticNetwork extends AbstractNetwork {
 		}
 		return p;
 	}
+	
 	public static void main(String[] arg) throws FileNotFoundException {
 		if(arg.length==0) {
 			HashMap<Type_Function, Double> configFunctions=

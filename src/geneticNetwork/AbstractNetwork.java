@@ -12,27 +12,21 @@ import javafx.util.Pair;
 import resources.Resources;
 
 public abstract class AbstractNetwork {
-	//predictores por gen
 	public abstract int[] getArrayPreditorsByGene(int idGene);
-	//obtener la funcion principal por gen
 	public abstract long[] getMainFunctionByGene(int idGene);
 	public abstract Pair<int[][], boolean[]> dinamicGeneDetails(int nGene, BooleanGeneExpressionData ged);
-	//obtener tamaño de genes
 	public abstract int getSizeGenes();
 	//public abstract byte[] getFunctionByteByGene(int nGene);
 	public abstract NavigableSet<Integer> getPredictorsByGene(int nGene);
 	
-	//tabla de frecuencias
 	public int[][] frequencyTableGene(int nGene, GeneExpressionData ged){
 		return buildFrequencyTable(getPredictorsByGene(nGene), ged, nGene);
 	}
-	//construye 
 	public static int[][] buildFrequencyTable(NavigableSet<Integer> preditors,
-			GeneExpressionData geneExpressionData,int geneTarget) {
-		//ej: 3 prdictores, sizediscretev = 2 , entocnes tabla[3^2][2]
+			GeneExpressionData geneExpressionData,
+			int geneTarget) {
 		int[][] table = new int[Resources.pow(geneExpressionData.sizeDiscreteValues(),preditors.size())][geneExpressionData.sizeDiscreteValues()];
-		// contagem de 0s y 1s -- contar 0 y 1
-		//getsizeData = nro de genes
+		// contagem de 0s y 1s
 		for (int j = 0; j < geneExpressionData.getSizeData() - 1; j++) {
 			table[indexPreditorsPos(geneExpressionData, j, preditors)][geneExpressionData.getData(j + 1,geneTarget)]++;
 		}
@@ -63,7 +57,6 @@ public abstract class AbstractNetwork {
 		int index = 0;
 		for (Iterator<Integer> it = preditors.iterator(); it.hasNext(); i++) {
 			int preditor = it.next();
-			//getboleandata -> retorna matriz de expresion
 			index += ((geneExpressionData.getBooleanData(indexData,preditor)) ? (1 << i) : 0);
 		}
 		return index;

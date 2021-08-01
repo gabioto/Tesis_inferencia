@@ -278,13 +278,13 @@ public class NetworkInfered extends AbstractNetworkInfered {
 					: testNetwork.getGens()[genInTest].getPredictors().contains(testGen);
 			boolean genInOriginalNetwork = originalNetwork.getPredictors()[genInTest].contains(testGen);
 
-			if (!genInOriginalNetwork && genInTestNetwork)// FP
+			if (!genInOriginalNetwork && genInTestNetwork)//FP
 			{
 				FPFNTPTN[0]++;
-			} else if (genInOriginalNetwork && !genInTestNetwork)// FN
+			} else if (genInOriginalNetwork && !genInTestNetwork)//FN
 			{
 				FPFNTPTN[1]++;
-			} else if (genInOriginalNetwork && genInTestNetwork)// TP
+			} else if (genInOriginalNetwork && genInTestNetwork)//TP
 			{
 				FPFNTPTN[2]++;
 			} else // (!geneEmGabarito && !geneEmRede) TN
@@ -295,5 +295,4 @@ public class NetworkInfered extends AbstractNetworkInfered {
 	}
 	return FPFNTPTN;
 }
-
 }

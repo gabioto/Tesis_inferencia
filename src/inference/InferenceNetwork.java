@@ -59,6 +59,46 @@ public class InferenceNetwork {
 			ID_EVALUATION_METRIC additionalMetric,
 			ID_QUALIFYING_FUNCTION qualifyingFunction, ConfigInference configInference, TYPE_STEAPS typeSteaps)
 			throws IOException {
+//		this.geneExpressionData = geneExpressionData;
+//		this.nameNetwork = nameNetwork;
+//		this.searchAlgoritm = searchAlgoritm;
+//		this.evaluationMetric = evaluationMetric;
+//		this.additionalMetric=additionalMetric;
+//		this.qualifyingFunction = qualifyingFunction;
+//		this.configInference = configInference;
+//		this.currentGensInfered = 0;
+//		this.nGens = geneExpressionData.getValidGens().size();
+//		if (NetworkInfered.existsFile(nameNetwork))
+//			this.networkInfered = NetworkInfered.readFromFile(nameNetwork);
+//		else
+//			this.networkInfered = new NetworkInfered(this.evaluationMetric,
+//					this.qualifyingFunction,
+//					this.searchAlgoritm,
+//					this.geneExpressionData.getSizeData(),
+//					new GeneInfered[this.nGens]);
+//		this.bufferSteps = new StringBuffer();
+//		this.typeSteaps = typeSteaps;
+		this(geneExpressionData,
+				nameNetwork,
+				searchAlgoritm,
+				evaluationMetric,
+				additionalMetric,
+				qualifyingFunction,
+				configInference,
+				typeSteaps,
+				false);
+	}
+	
+	public InferenceNetwork(GeneExpressionData geneExpressionData,
+			String nameNetwork,
+			ID_SEARCH_ALGORITM searchAlgoritm,
+			ID_EVALUATION_METRIC evaluationMetric,
+			ID_EVALUATION_METRIC additionalMetric,
+			ID_QUALIFYING_FUNCTION qualifyingFunction,
+			ConfigInference configInference,
+			TYPE_STEAPS typeSteaps,
+			boolean isById)
+			throws IOException {
 		this.geneExpressionData = geneExpressionData;
 		this.nameNetwork = nameNetwork;
 		this.searchAlgoritm = searchAlgoritm;
@@ -67,7 +107,11 @@ public class InferenceNetwork {
 		this.qualifyingFunction = qualifyingFunction;
 		this.configInference = configInference;
 		this.currentGensInfered = 0;
-		this.nGens = geneExpressionData.getValidGens().size();
+		if(isById) {
+			this.nGens = geneExpressionData.getSizeGens();
+		}
+		else
+			this.nGens = geneExpressionData.getValidGens().size();
 		if (NetworkInfered.existsFile(nameNetwork))
 			this.networkInfered = NetworkInfered.readFromFile(nameNetwork);
 		else
@@ -117,10 +161,48 @@ public class InferenceNetwork {
 				configInference.getQualifyingFunctionById(qualifyingFunction, evaluationMetric),
 				configInference.getSearchAlgoritmbyId(searchAlgoritm),
 				configInference.getEvaluationMetricById(additionalMetric));
+		//convertir el iesimo gen en su id
 		int idGene = geneExpressionData.getValidGens().get(iGene);
+		
 		Pair<GeneInfered, Deque<Double>[]> infGene = ig.inferenceGene(geneExpressionData, idGene,
 				(typeSteaps != TYPE_STEAPS.NONE));
 		this.networkInfered.getGens()[iGene] = infGene.getKey();
+		synchronized (this.nameNetwork) {
+		//	System.out.println("Inf Gene:" +idGene + " <- "+infGene.getKey().getPredictors());
+			if (typeSteaps != TYPE_STEAPS.NONE)
+				addBuffer(infGene.getValue(), otherInformation +" "+ idGene);
+			if (++this.currentGensInfered < this.nGens) {
+				return;
+			}
+		}
+		long i = Thread.currentThread().getId();
+		this.networkInfered.writeInFile(nameNetwork);
+		if (typeSteaps != TYPE_STEAPS.NONE) {
+				BufferedWriter out = new BufferedWriter(new FileWriter(nameNetwork+".csv"));
+				out.write(bufferSteps.toString());
+				out.flush();
+				out.close();
+		}
+		if (nameNetwork.lastIndexOf('/') != -1)
+			System.out.println(i + " " + nameNetwork.substring(nameNetwork.lastIndexOf('/')));
+		else
+			System.out.println(i + " " + nameNetwork);
+	}
+	
+	
+	public void inferedGeneById(int idGene, String otherInformation) throws IOException {
+		InferenceGene ig = new InferenceGene(
+				configInference.getQualifyingFunctionById(qualifyingFunction, evaluationMetric),
+				configInference.getSearchAlgoritmbyId(searchAlgoritm),
+				configInference.getEvaluationMetricById(additionalMetric));
+		//convertir el iesimo gen en su id   id:el valor en si
+		//int idGene = geneExpressionData.getValidGens().get(iGene);
+		
+		Pair<GeneInfered, Deque<Double>[]> infGene = ig.inferenceGene(geneExpressionData, idGene,
+				(typeSteaps != TYPE_STEAPS.NONE));
+		
+		this.networkInfered.getGens()[idGene] = infGene.getKey();
+		
 		synchronized (this.nameNetwork) {
 		//	System.out.println("Inf Gene:" +idGene + " <- "+infGene.getKey().getPredictors());
 			if (typeSteaps != TYPE_STEAPS.NONE)
@@ -270,8 +352,18 @@ public class InferenceNetwork {
 	public NetworkInfered inferedNetwork() throws IOException {
 		this.currentGensInfered = 0;
 		// ArrayList<Integer> validsGens = geneExpressionData.getValidGens();
-		for (int i = 0; i < nGens; i++) {
+		for (int i = 0; i < this.nGens; i++) {
 			this.inferedGene(i);
+		}
+		return this.networkInfered;
+	}
+	
+	public NetworkInfered inferedNetworkByIds() throws IOException {
+		this.currentGensInfered = 0;
+		// ArrayList<Integer> validsGens = geneExpressionData.getValidGens();
+		for (int i = 0; i < this.nGens; i++) {
+			this.inferedGeneById(i, "");;
+			
 		}
 		return this.networkInfered;
 	}
@@ -280,11 +372,70 @@ public class InferenceNetwork {
 		this.currentGensInfered = 0;
 		List<Integer> validsGens = geneExpressionData.getValidGens();
 //		Object[] stepsString = new Object[nGens];
-		for (int i = 0; i < nGens; i++) {
+		for (int i = 0; i < this.nGens; i++) {
 			this.inferedGene(validsGens.get(i));
 //			stepsString[i]+=this.networkInfered.detailsGeneExpression(i, geneExpressionData);
 		}
 		return new Pair<>(this.networkInfered, this.bufferSteps);
+	}
+	public static ArrayList<Integer> readRepresentatives(String nameFile) {
+		if (!nameFile.endsWith(".ged"))
+			nameFile += ".ged";
+		BufferedReader in;
+		ArrayList<Integer> representatives = new ArrayList<>();
+		try {
+			in = new BufferedReader(new FileReader(nameFile));
+
+			String line = in.readLine();
+			int dimension = Integer.parseInt(line);
+			int iLinha = 0;
+			String line2 = in.readLine();
+			String[] valores = line2.split(" ");
+		for(int i=0; i<valores.length;i++) {
+				representatives.add(Integer.parseInt(valores[i]));
+			}
+			in.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return representatives;
+	}
+
+	public static void main(String[] arg) throws IOException {
+		//System.out.println(Long.toBinaryString(16524));
+		BooleanGeneExpressionData ejemplo=new BooleanGeneExpressionData("matrizOriginal1000_1");
+		ArrayList<Integer> repr = new ArrayList<>();
+		repr = readRepresentatives("matrizC1000_1Representantes30");
+		ejemplo.setValidGens(repr);
+		System.out.println(repr);
+		InferenceNetwork inference= new InferenceNetwork(ejemplo,
+				"matrizoriginall_1000x30Inf",
+				ID_SEARCH_ALGORITM.IES,
+				ID_EVALUATION_METRIC.IGE,
+				ID_EVALUATION_METRIC.IGE,
+				
+				ID_QUALIFYING_FUNCTION.CG,
+				new ConfigInference(ejemplo.sizeData),
+				TYPE_STEAPS.NONE,
+				true);
+		NetworkInfered ni= inference.inferedNetworkByIds();
+		ni.show();
+		
+		//validacion dinamica
+		BooleanGeneExpressionData ejemplo2=new BooleanGeneExpressionData("matrizOriginal1000_2");
+		Pair<BooleanGeneExpressionData, Boolean[][]> vd= ni.makeGeneExpresionState(ejemplo2);
+		BooleanGeneExpressionData mg=vd.getKey();
+		//mg.print();
+		double tazadeaciertos=ejemplo2.taxaAcertos(mg, 1);
+		System.out.println(tazadeaciertos);
+		//BooleanGeneExpressionData r= new BooleanGeneExpressionData();
+		//double taza2=ejemplo.taxaAcertos(ejemplo.getData(04, 1 00), mg.getData(40, 100));
+		//Boolean[][] pro=vd.getValue();
+		
+	
+		
 	}
 
 //	public PreInferedNetwork inferedPreNetwork() {

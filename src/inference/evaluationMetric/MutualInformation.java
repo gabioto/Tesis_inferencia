@@ -31,7 +31,6 @@ public class MutualInformation implements EvaluationMetric {
 		int[] countAll = new int[sizeDiscreteValues] ;
 		// calcular H(Y) entropia de Y={0,1} total
 //		int size=0;
-		//suma cada valor de la columa	
 		for (int[] line : frequencyTable) {
 			for (int i = 0; i < sizeDiscreteValues; i++) {
 				countAll[i]+=line[i];
@@ -49,7 +48,7 @@ public class MutualInformation implements EvaluationMetric {
 		}
 		return fullEntropy;
 	}
-	
+
 	public double conditionalEntropy(int[][] frequencyTable) {
 		double entropyYX = 0;
 //		int size = 0;

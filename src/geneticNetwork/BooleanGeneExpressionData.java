@@ -522,6 +522,8 @@ public class BooleanGeneExpressionData  implements GeneExpressionData{
 		return this.validGens.stream().mapToInt(Integer::intValue).toArray();
 	}
 	
+
+
 	public static void main(String arg[]) throws IOException {
 		boolean[][] d=new boolean[][] {
 			{true,false}

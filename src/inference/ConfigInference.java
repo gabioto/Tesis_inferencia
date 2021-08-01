@@ -44,7 +44,7 @@ public class ConfigInference {
 				{
 					put(ID_SEARCH_ALGORITM.SFS, new Integer(10));
 					put(ID_SEARCH_ALGORITM.SBS, new Integer(4));
-					put(ID_SEARCH_ALGORITM.NDES, new Integer(2));
+					put(ID_SEARCH_ALGORITM.NDES, new Integer(3));
 					put(ID_SEARCH_ALGORITM.IES, new Integer(4));
 					put(ID_SEARCH_ALGORITM.IES_SFS, new int[] { 4, 10 });
 					put(ID_SEARCH_ALGORITM.CS, new Integer(3));
